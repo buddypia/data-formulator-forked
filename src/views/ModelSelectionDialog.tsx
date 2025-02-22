@@ -450,10 +450,6 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
                 {modelTable}
             </DialogContent>
             <DialogActions>
-                <Button sx={{marginRight: 'auto'}} endIcon={showKeys ? <VisibilityOffIcon /> : <VisibilityIcon />} onClick={()=>{
-                    setShowKeys(!showKeys);}}>
-                        {showKeys ? 'hide' : 'show'} keys
-                </Button>
                 <Button disabled={getStatus(tempSelectedModelId) !== 'ok'} 
                     variant={(selectedModelId == tempSelectedModelId) ? 'text' : 'contained'}
                     onClick={()=>{
