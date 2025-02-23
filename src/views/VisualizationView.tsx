@@ -548,8 +548,6 @@ export const ChartEditorFC: FC<{  cachedCandidates: DictTable[],
                         setCandidatesViewAnchorEl(null);
                     }}
                     handleSelection={(selectionIdx: number) => {
-                        console.log(`selected: ${selectionIdx}`)
-                        console.log(candidates[selectionIdx]);
                         dispatch(dfActions.replaceTable({chartId: focusedChart.id, table: candidates[selectionIdx]}))
                         dispatch(dfActions.setFocusedTable(candidates[selectionIdx].id));
                         setCandidatesViewAnchorEl(null);

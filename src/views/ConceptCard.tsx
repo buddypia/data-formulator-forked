@@ -122,7 +122,6 @@ export const ConceptCard: FC<ConceptCardProps> = function ConceptCard({ field })
     if (field.source == "derived") {
         let parentConceptNames = (field.transform as ConceptTransformation)
                 .parentIDs.map((parentID) => conceptShelfItems.find(c => c.id == parentID) as FieldItem).map(f => f.name);
-        console.log(parentConceptNames)
         notInFocusedTable = parentConceptNames.some(name => !focusedChartRefTable?.names.includes(name));
     } else {
         notInFocusedTable = !focusedChartRefTable?.names.includes(field.name);
@@ -618,8 +617,6 @@ export const DerivedConceptForm: FC<ConceptFormProps> = function DerivedConceptF
                 renderValue={(selected) =>
                     <Typography key={selected[0]} sx={{ whiteSpace: "normal", fontSize: "inherit" }}>
                         {selected.map(conceptID => {
-                            console.log(conceptID)
-                            console.log(conceptShelfItems.find(f => f.id == conceptID)?.source)
                             let chipColor = conceptShelfItems.find(f => f.id == conceptID)?.source == "original" ? theme.palette.primary.light : theme.palette.custom.main;
                             return <Chip 
                                 key={conceptID}
@@ -895,8 +892,6 @@ export const CodexDialogBox: FC<CodexDialogBoxProps> = function ({
                 setRequestTimeStamp(Date.now());
                 //setTransformCode("");
 
-                console.log(`[fyi] just sent request "${description}" at ${requestTimeStamp}`);
-
                 let message = {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', },
@@ -919,9 +914,6 @@ export const CodexDialogBox: FC<CodexDialogBoxProps> = function ({
                 fetch(getUrls().DERIVE_CONCEPT_URL, {...message, signal: controller.signal })
                     .then((response) => response.json())
                     .then((data) => {
-                        console.log("---model output")
-                        console.log(data);
-
                         let status = data["status"];
                         let codeList: string[] = [];
 

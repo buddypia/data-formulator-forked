@@ -74,7 +74,6 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
     const testedModels = useSelector((state: DataFormulatorState) => state.testedModels);
 
     const [modelDialogOpen, setModelDialogOpen] = useState<boolean>(false);
-    const [showKeys, setShowKeys] = useState<boolean>(false);
     const [tempSelectedModelId, setTempSelectedModeId] = useState<string | undefined >(selectedModelId);
 
     let updateModelStatus = (model: ModelConfig, status: 'ok' | 'error' | 'testing' | 'unknown', message: string) => {
@@ -189,7 +188,7 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
             />
         </TableCell>
         <TableCell align="left" >
-            <TextField fullWidth size="small" type={showKeys ? "text" : "password"} 
+            <TextField fullWidth size="small" type="password" 
                 InputProps={{ style: { fontSize: "0.875rem" } }} 
                 placeholder='leave blank if using keyless access'
                 error={!(newEndpoint == "azure" || newEndpoint == "ollama" || newEndpoint == "") && !newApiKey}
@@ -258,8 +257,6 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
                     sx={{cursor: modelExists ? 'help' : 'pointer'}}
                     onClick={(event) => {
                         event.stopPropagation()
-
-                        console.log("checkpont 1")
 
                         let endpoint = newEndpoint;
 
@@ -348,20 +345,7 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
                                 {model.endpoint}
                             </TableCell>
                             <TableCell component="th" scope="row" sx={{ borderBottom: borderStyle }}>
-                                {model.api_key  ? (showKeys ? 
-                                    <Typography 
-                                        sx={{ 
-                                            maxWidth: '240px',
-                                            wordBreak: 'break-all',
-                                            whiteSpace: 'normal'
-                                        }} 
-                                        fontSize={10}
-                                    >
-                                        {model.api_key}
-                                    </Typography> 
-                                    : "************")
-                                     : <Typography sx={{color: "text.secondary"}} fontSize='inherit'>N/A</Typography>
-                                }
+                                {model.api_key  ? "************" : <Typography sx={{color: "text.secondary"}} fontSize='inherit'>N/A</Typography>}
                             </TableCell>
                             <TableCell align="left" sx={{ borderBottom: borderStyle }}>
                                 {model.model}

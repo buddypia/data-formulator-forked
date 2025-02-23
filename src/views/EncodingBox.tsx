@@ -294,18 +294,13 @@ export const EncodingBox: FC<EncodingBoxProps> = function EncodingBox({ channel,
             .then((response) => response.json())
             .then((data) => {
                 setAutoSortInferRunning(false);
-                console.log(data);
-                console.log(token);
 
                 if (data["status"] == "ok") {
                     if (data["token"] == token) {
                         let candidate = data["result"][0];
-                        console.log(candidate)
-                        console.log(candidate['status'])
                         
                         if (candidate['status'] == 'ok') {
                             let sortRes = {values: candidate['content']['sorted_values'], reason: candidate['content']['reason']}
-                            console.log(sortRes)
                             setAutoSortResult(sortRes);
 
                             let tmpConcept = duplicateField(field as FieldItem);
@@ -525,7 +520,6 @@ export const EncodingBox: FC<EncodingBoxProps> = function EncodingBox({ channel,
             if (option == "...") {
                 console.log("nothing happens")
             } else {
-                console.log(`about to add ${option}`)
                 let newConept = {
                     id: `concept-${Date.now()}`, name: option, type: "auto" as Type, 
                     description: "", source: "custom", domain: [],
@@ -541,7 +535,6 @@ export const EncodingBox: FC<EncodingBoxProps> = function EncodingBox({ channel,
     let createConceptInputBox = <Autocomplete
         key="concept-create-input-box"
         onChange={(event, value) => {
-            console.log(`change: ${value}`)
             if (value != null) {
                 handleSelectOption(value)
             }

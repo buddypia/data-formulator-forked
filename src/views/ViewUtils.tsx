@@ -18,9 +18,6 @@ import { DictTable } from '../components/ComponentType';
 export const getDomains = (field: FieldItem, tables: DictTable[]) : any[][] => {
     let domains = tables.filter(t => t.names.includes(field.name))
             .map(t => [...new Set(t.rows.map(row => row[field.name]))])
-    // console.log("=== domains ===")
-    // console.log(field.name)
-    // console.log(domains)
     domains = domains.filter((d, i) =>  {
         return !domains.slice(0, i).some(prevD => JSON.stringify(prevD.slice().sort()) == JSON.stringify(d.slice().sort()));
     })
@@ -101,10 +98,6 @@ export const processCodeCandidates = (rawCodeList: string[], parentIDs: string[]
             return result
         })
         .filter(([codeStr, ioPairs]) => {
-            // console.log(codeStr)
-            // console.log(ioPairs)
-            // console.log(ioPairs.map(pair => [pair[1], pair[1] == NaN, Number.isNaN(pair[1])]))
-
             // when no ioPairs is available, we also keep the concept / function
             return  ioPairs.length == 0 || !ioPairs.every(pair => pair[1] == undefined || pair[1] == null || Number.isNaN(pair[1]) || isArrayOrObj(pair[1]))
         })

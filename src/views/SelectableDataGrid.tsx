@@ -280,10 +280,6 @@ export const SelectableDataGrid: React.FC<SelectableDataGridProps> = ({ rows, ta
             <Tooltip title="Infer Data Type">
             <IconButton size="small" color="primary"
                 onClick={() => {
-                        console.log(`[fyi] just sent request to process load data`);
-    
-                        console.log(rows);
-
                         let message = {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', },
@@ -301,15 +297,11 @@ export const SelectableDataGrid: React.FC<SelectableDataGridProps> = ({ rows, ta
                         fetch(getUrls().SERVER_PROCESS_DATA_ON_LOAD, {...message, signal: controller.signal })
                             .then((response) => response.json())
                             .then((data) => {
-                                console.log("---model output")
-                                console.log(data);
-    
                                 let status = data["status"];
                                 let codeList: string[] = [];
     
                                 if (data["status"] == "ok") {
                                     codeList = data["result"];
-                                    console.log(codeList)
                                 }
                             }).catch((error) => {
                             });

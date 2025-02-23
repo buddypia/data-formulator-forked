@@ -259,8 +259,6 @@ export const SelectableTable: React.FC<SelectableTableProps> = ({ rows, columnDe
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
     const onClickCell = (event: any) => {
-        console.log('click cell');
-        console.log(event);
         let item = undefined;
         for (const r of $tableRef.current ? $tableRef.current.registry : []) {
             if (r.node === event.target) {

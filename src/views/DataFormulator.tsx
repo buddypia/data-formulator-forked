@@ -172,10 +172,6 @@ Totals (7 entries)	5	5	5	15
                 target="_blank" rel="noopener noreferrer" 
                 href="https://privacy.microsoft.com/en-US/data-privacy-notice">view data privacy notice</Button>
     </Box>;
-
-
-    console.log("selected model?")
-    console.log(selectedModelId)
     
     return (
         <Box sx={{ display: 'block', width: "100%", height: 'calc(100% - 49px)' }}>

@@ -5,6 +5,7 @@
 # Environment files
 .env
 config/api-keys.env
+config/.env
 
 # Python
 __pycache__

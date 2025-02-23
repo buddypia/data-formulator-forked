@@ -221,10 +221,6 @@ export const EncodingShelfThread: FC<EncodingShelfThreadProps> = function ({ cha
         }) 
         let engine = getUrls().SERVER_DERIVE_DATA_URL;
 
-        console.log("current log")
-        console.log(triggerTable.derive?.dialog)
-
-
         if (mode == "formulate" && triggerTable.derive?.dialog) {
             messageBody = JSON.stringify({
                 token: token,
