@@ -17,9 +17,8 @@ WORKDIR /app
 # Create directory for API keys
 RUN mkdir -p /app/config
 
-# Copy entrypoint script
-COPY docker/docker-entrypoint.sh /app/
-RUN chmod +x /app/docker-entrypoint.sh
+# Copy source code
+COPY . .
 
 # Install Python dependencies
 COPY requirements.txt .
@@ -28,9 +27,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Install Node.js dependencies
 COPY package.json yarn.lock ./
 RUN yarn install
-
-# Copy source code
-COPY . .
 
 # Expose ports for both backend and frontend development
 EXPOSE 5000 5173
@@ -41,7 +37,8 @@ ENV CONFIG_DIR=/app/config
 ENV NODE_ENV=development
 
 # Use entrypoint script
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+# CMD ["sleep", "infinity"]
+ENTRYPOINT ["/app/docker/docker-entrypoint.sh"]
 
 # Stage 2: Production environment
 FROM python:3.11-slim as production
@@ -53,7 +50,7 @@ WORKDIR /app
 RUN mkdir -p /app/config
 
 # Copy entrypoint script
-COPY docker/docker-entrypoint.sh /app/
+COPY docker/docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
 # Install data_formulator package
