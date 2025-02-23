@@ -53,7 +53,6 @@ print(APP_ROOT)
 # Load the single environment file
 load_dotenv(os.path.join(APP_ROOT, "..", "..", 'api-keys.env'))
 load_dotenv(os.path.join(APP_ROOT, 'api-keys.env'))
-load_dotenv(os.path.join(APP_ROOT, '.env'))
 
 # Configure root logger for general application logging
 logging.basicConfig(

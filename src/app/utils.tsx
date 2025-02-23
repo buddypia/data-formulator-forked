@@ -20,12 +20,13 @@ export interface PopupConfig {
 }
 
 export const appConfig: AppConfig = {
-    serverUrl:  process.env.NODE_ENV == "production" ? "./" : process.env.SERVER_URL || "http://127.0.0.1:5000/",
+    serverUrl:  process.env.NODE_ENV == "production" ? "./" : "http://127.0.0.1:5000/",
 };
 
 export function assignAppConfig(config: AppConfig) {
     //assign the new config to the appConfig
     Object.assign(appConfig, config);
+    console.log('appConfig', appConfig);
 }
 
 export function getUrls() {

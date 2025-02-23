@@ -3,7 +3,6 @@
 .gitignore
 
 # Environment files
-.env
 config/api-keys.env
 config/.env
 
