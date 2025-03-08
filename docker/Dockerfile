@@ -54,7 +54,7 @@ COPY docker/docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
 # Install data_formulator package
-RUN pip install --no-cache-dir data_formulator
+RUN pip install --no-cache-dir https://github.com/buddypia/data-formulator-forked/blob/master/dist/data_formulator-0.1.6.2%2Bcustom-py3-none-any.whl?raw=true
 
 # Expose backend port
 EXPOSE 5000
