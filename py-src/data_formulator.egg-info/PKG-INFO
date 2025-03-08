@@ -1,6 +1,6 @@
 Metadata-Version: 2.2
 Name: data_formulator
-Version: 0.1.6.1+custom
+Version: 0.1.6.2+custom
 Summary: Data Formulator is research protoype data visualization tool powered by AI.
 Author-email: Chenglong Wang <chenglong.wang@microsoft.com>, Dan Marshall <danmar@microsoft.com>
 License:     MIT License

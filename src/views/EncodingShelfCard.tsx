@@ -480,6 +480,7 @@ export const EncodingShelfCard: FC<EncodingShelfCardProps> = function ({ chartId
             .then((data) => {
                 
                 dispatch(dfActions.changeChartRunningStatus({chartId, status: false}))
+
                 if (data.results.length > 0) {
                     if (data["token"] == token) {
                         let candidates = data["results"].filter((item: any) => {

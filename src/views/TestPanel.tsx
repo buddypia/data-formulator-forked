@@ -43,6 +43,7 @@ export default class TestPanel extends React.Component<TestPanelProps, TestPanel
     
         // value for fetch streams is a Uint8Array
         const chunk = value;
+        console.log(`Current chunk = ${chunk}`);
 
         if (value) {
             let vgObj = JSON.parse(value);

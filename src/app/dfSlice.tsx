@@ -672,6 +672,9 @@ export const dataFormulatorSlice = createSlice({
             if (state.selectedModelId == undefined && defaultModels.length > 0) {
                 state.selectedModelId = defaultModels[0].id;
             }
+
+            console.log("load model complete");
+            console.log("state.models", state.models);
         })
         .addCase(fetchCodeExpl.fulfilled, (state, action) => {
             let codeExpl = action.payload;

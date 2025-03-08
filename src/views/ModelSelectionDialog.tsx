@@ -54,6 +54,11 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 import { getUrls } from '../app/utils';
 
+// Add interface for app configuration
+interface AppConfig {
+    SHOW_KEYS_ENABLED: boolean;
+}
+
 export const GroupHeader = styled('div')(({ theme }) => ({
     position: 'sticky',
     padding: '8px 8px',
@@ -74,7 +79,29 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
     const testedModels = useSelector((state: DataFormulatorState) => state.testedModels);
 
     const [modelDialogOpen, setModelDialogOpen] = useState<boolean>(false);
-    const [tempSelectedModelId, setTempSelectedModeId] = useState<string | undefined >(selectedModelId);
+    const [showKeys, setShowKeys] = useState<boolean>(false);
+    const [tempSelectedModelId, setTempSelectedModelId] = useState<string | undefined >(selectedModelId);
+    const [providerModelOptions, setProviderModelOptions] = useState<{[key: string]: string[]}>({
+        'openai': [],
+        'azure': [],
+        'anthropic': [],
+        'gemini': [],
+        'ollama': []
+    });
+    const [isLoadingModelOptions, setIsLoadingModelOptions] = useState<boolean>(false);
+    const [appConfig, setAppConfig] = useState<AppConfig>({ SHOW_KEYS_ENABLED: true });
+
+    // Fetch app configuration
+    useEffect(() => {
+        fetch(getUrls().APP_CONFIG)
+            .then(response => response.json())
+            .then(data => {
+                setAppConfig(data);
+            })
+            .catch(error => {
+                console.error("Failed to fetch app configuration:", error);
+            });
+    }, []);
 
     let updateModelStatus = (model: ModelConfig, status: 'ok' | 'error' | 'testing' | 'unknown', message: string) => {
         dispatch(dfActions.updateModelStatus({id: model.id, status, message}));
@@ -89,6 +116,47 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
     const [newApiBase, setNewApiBase] = useState<string | undefined>(undefined);
     const [newApiVersion, setNewApiVersion] = useState<string | undefined>(undefined);
 
+    // Fetch available models from the API
+    useEffect(() => {
+        const fetchModelOptions = async () => {
+            setIsLoadingModelOptions(true);
+            try {
+                const response = await fetch(getUrls().CHECK_AVAILABLE_MODELS);
+                const data = await response.json();
+                
+                // Group models by provider
+                const modelsByProvider: {[key: string]: string[]} = {
+                    'openai': [],
+                    'azure': [],
+                    'anthropic': [],
+                    'gemini': [],
+                    'ollama': []
+                };
+                
+                data.forEach((modelConfig: any) => {
+                    const provider = modelConfig.endpoint;
+                    const model = modelConfig.model;
+
+                    if (provider && model && !modelsByProvider[provider]) {
+                        modelsByProvider[provider] = [];
+                    }
+                    
+                    if (provider && model && !modelsByProvider[provider].includes(model)) {
+                        modelsByProvider[provider].push(model);
+                    }
+                });
+                
+                setProviderModelOptions(modelsByProvider);
+                
+            } catch (error) {
+                console.error("Failed to fetch model options:", error);
+            } 
+            setIsLoadingModelOptions(false);
+        };
+        
+        fetchModelOptions();
+    }, []);
+
     useEffect(() => {
         if (newEndpoint == 'ollama') {
             if (!newApiBase) {
@@ -96,16 +164,16 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
             }
         }
         if (newEndpoint == "openai") {
-            if (!newModel) {
-                setNewModel('gpt-4o');
+            if (!newModel && providerModelOptions.openai.length > 0) {
+                setNewModel(providerModelOptions.openai[0]);
             }
         }
         if (newEndpoint == "anthropic") {
-            if (!newModel) {
-                setNewModel('claude-3-5-sonnet-20241022');
+            if (!newModel && providerModelOptions.anthropic.length > 0) {
+                setNewModel(providerModelOptions.anthropic[0]);
             }
         }
-    }, [newEndpoint]);
+    }, [newEndpoint, providerModelOptions]);
 
     let modelExists = models.some(m => 
         m.endpoint == newEndpoint && m.model == newModel && m.api_base == newApiBase 
@@ -137,7 +205,7 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
         sx={{ '&:last-child td, &:last-child th': { border: 0 }, padding: "6px 6px" }}
         onClick={(event) => {
             event.stopPropagation();
-            setTempSelectedModeId(undefined);
+            setTempSelectedModelId(undefined);
         }}
     >
         <TableCell align="right">
@@ -149,8 +217,8 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
                 value={newEndpoint}
                 onChange={(event: any, newValue: string | null) => {
                     setNewEndpoint(newValue || "");
-                    if (newModel == "" && newValue == "openai") {
-                        setNewModel("gpt-4o");
+                    if (newModel == "" && newValue == "openai" && providerModelOptions.openai.length > 0) {
+                        setNewModel(providerModelOptions.openai[0]);
                     }
                     if (!newApiVersion && newValue == "azure") {
                         setNewApiVersion("2024-02-15");
@@ -188,7 +256,7 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
             />
         </TableCell>
         <TableCell align="left" >
-            <TextField fullWidth size="small" type="password" 
+            <TextField fullWidth size="small" type={showKeys ? "text" : "password"} 
                 InputProps={{ style: { fontSize: "0.875rem" } }} 
                 placeholder='leave blank if using keyless access'
                 error={!(newEndpoint == "azure" || newEndpoint == "ollama" || newEndpoint == "") && !newApiKey}
@@ -201,7 +269,9 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
                 freeSolo
                 onChange={(event: any, newValue: string | null) => { setNewModel(newValue || ""); }}
                 value={newModel}
-                options={['gpt-4o-mini', 'gpt-4o', 'claude-3-5-sonnet-20241022']}
+                options={newEndpoint && providerModelOptions[newEndpoint] ? providerModelOptions[newEndpoint] : []}
+                loading={isLoadingModelOptions}
+                loadingText={<Typography sx={{fontSize: "0.875rem"}}>loading...</Typography>}
                 renderOption={(props, option) => {
                     return <Typography {...props} onClick={()=>{ setNewModel(option); }} sx={{fontSize: "small"}}>{option}</Typography>
                 }}
@@ -210,7 +280,16 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
                         error={newEndpoint != "" && !newModel}
                         {...params}
                         placeholder="model name"
-                        InputProps={{ ...params.InputProps, style: { fontSize: "0.875rem" } }}
+                        InputProps={{ 
+                            ...params.InputProps, 
+                            style: { fontSize: "0.875rem" },
+                            endAdornment: (
+                                <>
+                                    {isLoadingModelOptions ? <CircularProgress color="primary" size={20} /> : null}
+                                    {params.InputProps.endAdornment}
+                                </>
+                            ),
+                        }}
                         inputProps={{
                             ...params.inputProps,
                             'aria-label': 'Select or enter a model',
@@ -224,9 +303,11 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
                 }}
                 PaperComponent={({ children }) => (
                     <Paper>
-                        <Typography sx={{ p: 1, color: 'gray', fontStyle: 'italic', fontSize: 'small' }}>
-                            examples
-                        </Typography>
+                        {!isLoadingModelOptions && (
+                            <Typography sx={{ p: 1, color: 'gray', fontStyle: 'italic', fontSize: 'small' }}>
+                                examples
+                            </Typography>
+                        )}
                         {children}
                     </Paper>
                 )}
@@ -258,6 +339,8 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
                     onClick={(event) => {
                         event.stopPropagation()
 
+                        console.log("checkpont 1")
+
                         let endpoint = newEndpoint;
 
                         let id = `${endpoint}-${newModel}-${newApiKey}-${newApiBase}-${newApiVersion}`;
@@ -266,7 +349,7 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
 
                         dispatch(dfActions.addModel(model));
                         dispatch(dfActions.selectModel(id));
-                        setTempSelectedModeId(id);
+                        setTempSelectedModelId(id);
 
                         testModel(model); 
                         
@@ -335,7 +418,7 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
                         <TableRow
                             selected={isItemSelected}
                             key={`${model.id}`}
-                            onClick={() => { setTempSelectedModeId(model.id) }}
+                            onClick={() => { setTempSelectedModelId(model.id) }}
                             sx={{ cursor: 'pointer'}}
                         >
                             <TableCell align="right" sx={{ borderBottom: noBorderStyle }}>
@@ -345,7 +428,20 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
                                 {model.endpoint}
                             </TableCell>
                             <TableCell component="th" scope="row" sx={{ borderBottom: borderStyle }}>
-                                {model.api_key  ? "************" : <Typography sx={{color: "text.secondary"}} fontSize='inherit'>N/A</Typography>}
+                                {model.api_key  ? (showKeys ? 
+                                    <Typography 
+                                        sx={{ 
+                                            maxWidth: '240px',
+                                            wordBreak: 'break-all',
+                                            whiteSpace: 'normal'
+                                        }} 
+                                        fontSize={10}
+                                    >
+                                        {model.api_key}
+                                    </Typography> 
+                                    : "************")
+                                     : <Typography sx={{color: "text.secondary"}} fontSize='inherit'>N/A</Typography>
+                                }
                             </TableCell>
                             <TableCell align="left" sx={{ borderBottom: borderStyle }}>
                                 {model.model}
@@ -373,10 +469,10 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
                                             if ((tempSelectedModelId) 
                                                     && tempSelectedModelId == model.id) {
                                                 if (models.length == 0) {
-                                                    setTempSelectedModeId(undefined);
+                                                    setTempSelectedModelId(undefined);
                                                 } else {
                                                     let chosenModel = models[models.length - 1];
-                                                    setTempSelectedModeId(chosenModel.id)
+                                                    setTempSelectedModelId(chosenModel.id)
                                                 }
                                             }
                                         }}>
@@ -388,7 +484,7 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
                         {['error', 'unknown'].includes(status) && (
                             <TableRow 
                                 selected={isItemSelected}
-                                onClick={() => { setTempSelectedModeId(model.id) }}
+                                onClick={() => { setTempSelectedModelId(model.id) }}
                                 sx={{ 
                                     cursor: 'pointer',
                                     '&:hover': {
@@ -409,13 +505,18 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
                 })}
                 {newModelEntry}
                 <TableRow>
-                    <TableCell colSpan={8} align="left" sx={{fontSize: "0.625rem"}}>
-                        Model configuration based on LiteLLM,  <a href="https://docs.litellm.ai/docs/" target="_blank" rel="noopener noreferrer">check out supported endpoint / models here</a>. 
-                        Models with limited code generation capabilities (e.g., llama3.2) may fail frequently to derive new data.
+                    <TableCell colSpan={8} align="left" sx={{ '& .MuiTypography-root': { fontSize: "0.625rem" } }}>
+                        <Typography>
+                            Model configuration based on LiteLLM,  <a href="https://docs.litellm.ai/docs/" target="_blank" rel="noopener noreferrer">check out supported endpoint / models here</a>. 
+                            If using custom providers that are compatible with the OpenAI API, choose 'openai' as the provider.
+                        </Typography>
+                        <Typography>
+                            Models with limited code generation capabilities (e.g., llama3.2) may fail frequently to derive new data.
+                        </Typography>
                     </TableCell>
                 </TableRow>
-            </TableBody>
-        </Table>
+                </TableBody>
+            </Table>
     </TableContainer>
 
     return <>
@@ -438,13 +539,19 @@ export const ModelSelectionButton: React.FC<{}> = ({ }) => {
                 {modelTable}
             </DialogContent>
             <DialogActions>
+                {appConfig.SHOW_KEYS_ENABLED && (
+                    <Button sx={{marginRight: 'auto'}} endIcon={showKeys ? <VisibilityOffIcon /> : <VisibilityIcon />} onClick={()=>{
+                        setShowKeys(!showKeys);}}>
+                            {showKeys ? 'hide' : 'show'} keys
+                    </Button>
+                )}
                 <Button disabled={getStatus(tempSelectedModelId) !== 'ok'} 
                     variant={(selectedModelId == tempSelectedModelId) ? 'text' : 'contained'}
                     onClick={()=>{
                         dispatch(dfActions.selectModel(tempSelectedModelId));
                         setModelDialogOpen(false);}}>apply model</Button>
                 <Button onClick={()=>{
-                    setTempSelectedModeId(selectedModelId);
+                    setTempSelectedModelId(selectedModelId);
                     setModelDialogOpen(false);
                 }}>cancel</Button>
             </DialogActions>
