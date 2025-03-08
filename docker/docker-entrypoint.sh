@@ -11,6 +11,16 @@ if [ -f "$CONFIG_DIR/api-keys.env" ]; then
     export $(cat "$CONFIG_DIR/api-keys.env" | xargs)
 fi
 
+# Create .env if it doesn't exist
+if [ ! -f "$CONFIG_DIR/.env" ]; then
+    touch "$CONFIG_DIR/.env"
+fi
+
+# Export environment variables from .env
+if [ -f "$CONFIG_DIR/.env" ]; then
+    export $(cat "$CONFIG_DIR/.env" | xargs)
+fi
+
 # Function to start the development server
 start_dev() {
     echo "Starting Data Formulator in development mode..."
